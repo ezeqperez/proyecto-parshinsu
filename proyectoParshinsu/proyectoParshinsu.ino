@@ -1,32 +1,28 @@
-#include <DS1302.h>
 #include <Wire.h>  
-DS1302 rtc(7, 8, 9);
 #include <DHT11.h>
-Time time;
 const int ventilacion = 4;
-const int luces = 5;
-const int dacalor = 6;
-
+const int dacalor = 5;
+const int luces = 6;
+int led = 13;
 int sensorth = 11;
 DHT11 dht11(sensorth);
-
-
 
 void setup()
 {
   // Set the clock to run-mode, and disable the write protection
-  rtc.halt(false);
-  rtc.writeProtect(false);
   Serial.begin(9600);
-
+  pinMode(led, OUTPUT);
   pinMode(ventilacion, OUTPUT);
   pinMode(luces, OUTPUT);
   pinMode(dacalor, OUTPUT);
 
+  //Low lo prende
+  //High lo apaga
+
   //Inicializamos las cosas en apagado
-  digitalWrite(ventilacion, LOW);
-  digitalWrite(luces, LOW);
-  digitalWrite(dacalor, LOW);
+  digitalWrite(ventilacion, HIGH);
+  digitalWrite(luces, HIGH);
+  digitalWrite(dacalor, HIGH);
 
   
   /*
@@ -37,27 +33,12 @@ void setup()
   */
 }
 
-void loop()
-{
+void loop(){
+  digitalWrite(led, HIGH);
+  delay(1000);
+  digitalWrite(led, LOW);
+  delay(1000);
   float temp, hum;
-
-  //Muestro por pantalla cada elemento del tiempo por separado
-  time = rtc.getTime();
-  Serial.print(" Año: ");
-  Serial.print(time.year, DEC);
-  Serial.print(" Mes: ");
-  Serial.print(time.mon, DEC);  
-  Serial.print(" Dia: ");
-  Serial.print(time.date, DEC);  
-  Serial.println();
-  Serial.print(" Hora: ");
-  Serial.print(time.hour, DEC);
-  Serial.print(" Minutos: ");
-  Serial.print(time.min, DEC);  
-  Serial.print(" Segundos: ");
-  Serial.print(time.sec, DEC);
-  Serial.println();
-
   //Si es 0, leyo ok
   if (dht11.read(hum, temp) == 0) 
   {
@@ -73,29 +54,28 @@ void loop()
     Serial.print("No se pudo leer el sensor :");
     Serial.println();
   }
-  delay(1000); 
-
+ 
   controlCalefaccion(temp);
   controlVentilacion(temp, hum);
-  controlLuces();
-}  
+  }  
 
-void controlCalefaccion(int temperatura){
-  if(temperatura < 20){
+//Se prende si la temperatura es menor a 20
+void controlCalefaccion(int temp){
+  if(temp < 20){
+    digitalWrite(dacalor, LOW);
+  }else{
     digitalWrite(dacalor, HIGH);
   }
 }
 
-void controlVentilacion(int temperatura, int humedad){
-  if (temperatura > 26 || humedad > 65){
+//Se prende si la temperatura es mayor a 26 o si la humedad es mayor a 65
+void controlVentilacion(int temp, int hum){
+  if (temp > 26 || hum > 80){
+    digitalWrite(ventilacion, LOW);
+  }else{
     digitalWrite(ventilacion, HIGH);
   }
+  
 }
 
-void controlLuces(){
-  if(time.hour>=06 && time.hour<24){
-    digitalWrite(luces, HIGH);
-  }else{
-    digitalWrite(luces, LOW);
-  }
-}
+
