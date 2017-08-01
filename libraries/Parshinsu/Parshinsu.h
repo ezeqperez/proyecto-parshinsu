@@ -41,6 +41,8 @@ EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, 80, 06, 24);
 EstadoPlanta* floracion  = nuevoEstadoPlanta(26, 20, 80, 06, 24);
 
 
+void prenderRele(int puerto){ digitalWrite(puerto, HIGH);}
+void apagarRele(int puerto) { digitalWrite(puerto, HIGH);}
 
 	/*
 	*
