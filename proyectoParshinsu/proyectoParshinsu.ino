@@ -54,7 +54,7 @@ void loop() {
   controlCalefaccion(temp);
   controlVentilacion(temp, hum);
   controlLuces();
-  delay(60000);
+  delay(300000);
 }
 
 //Se prende si la temperatura es menor a 20
@@ -68,7 +68,7 @@ void controlCalefaccion(int temp) {
 
 //Se prende si la temperatura es mayor a 26 o si la humedad es mayor a 65
 void controlVentilacion(int temp, int hum) {
-  if (estado->temperaturaVentilacion > 26 || estado->humedad > 80) {
+  if (estado->temperaturaVentilacion > 26 || estado->humedad > 80 || primerosCincoMinutos() || horaEnPunto(13)) {
     prenderRele(ventilacion);
   } else {
     apagarRele(ventilacion);
@@ -89,5 +89,7 @@ void controlLuces() {
     apagarRele(lamparas);
   }
 }
+
+
 
 

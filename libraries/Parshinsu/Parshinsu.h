@@ -71,6 +71,15 @@ EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 
 void prenderRele(int puerto){ digitalWrite(puerto, HIGH);}
 void apagarRele(int puerto) { digitalWrite(puerto, HIGH);}
 
+
+boolean primerosCincoMinutos(){
+  return tm.Minute>=00 || tm.Minute<=05;
+}
+
+boolean horaEnPunto(int hora){
+  return tm.Hour==hora && primerosCincoMinutos();
+}
+
 	/*
 	*
 	*	Abajo está el código que sacamos de internet
