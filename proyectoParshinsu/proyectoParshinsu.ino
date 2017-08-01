@@ -78,24 +78,44 @@ void controlVentilacion(int temp, int hum) {
 }
 
 void controlLuces() {
-  if (tm.Hour >= estado->horaPrendido && tm.Hour < estado->horaApagado ) {
+//Revisar  if (estado->horaPrendido<=(horaParaComparar(tm.Hour,(false))) && (tm.Hour <= horaParaComparar(estado->horaApagado, (estado->horaApagado-tm.Hour)>=0)) ) {
+if(tm.Hour>=06 && tm.Hour<24){
     Serial.print("Se prenden las luces, son las ");
+    mostrarFecha();
     Serial.println(tm.Hour);
+
+        Serial.println(estado->horaPrendido);
+    Serial.print(" Tiene que ser menor a ");
+    Serial.print(horaParaComparar(tm.Hour,(false)));
+    Serial.println();
+    print2digits(tm.Hour);
+    Serial.print(" menor a ");
+    Serial.println( horaParaComparar(estado->horaApagado, (estado->horaApagado-tm.Hour)>=0));
     prenderRele(leds);
     prenderRele(lamparas);
   } else {
-    Serial.print("Luces Apagadas, son las ");
-    Serial.println(tm.Hour);
+    Serial.println("Luces Apagadas, son las ");
+    print2digits(tm.Hour);
+    
+        Serial.println(horaParaComparar(tm.Hour,(estado->horaPrendido-tm.Hour)>=0));
+    Serial.print(" Tiene que ser mayor a ");
+    Serial.println(estado->horaPrendido);
+    Serial.println();
+    print2digits(tm.Hour);
+    Serial.print(" menor a ");
+    Serial.println( horaParaComparar(estado->horaApagado, (estado->horaApagado-tm.Hour)>=0));
     apagarRele(leds);
     apagarRele(lamparas);
   }
 }
 
-boolean horaParaComparar(){
-  if(isAM()){
-    return tm.Hour +24;
+int horaParaComparar(int hora, bool seHace){
+  int aComparar = hora+12;
+  if(aComparar>=24 && seHace){
+    return hora;
+  }else{
+  return (hora+24);
   }
-  return tm.Hour;
 }
 
 
