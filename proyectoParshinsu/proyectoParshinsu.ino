@@ -60,19 +60,26 @@ void loop() {
 
 //Se prende si la temperatura es menor a 20
 void controlCalefaccion(int temp) {
-  if (estado->temperaturaCalefaccion < 20) {
-    prenderRele(dacalor);
+  if (temp<estado->temperaturaCalefaccion) {
+    Serial.println(estado->temperaturaCalefaccion);
+    //prenderRele(dacalor);
+    digitalWrite(dacalor,LOW);
   } else {
-    apagarRele(dacalor);
+    //apagarRele(dacalor);
+    Serial.println(estado->temperaturaCalefaccion);
+    digitalWrite(dacalor,HIGH);
   }
 }
 
 //Se prende si la temperatura es mayor a 26 o si la humedad es mayor a 65
 void controlVentilacion(int temp, int hum) {
-  if (estado->temperaturaVentilacion > 26 || estado->humedad > 80 || primerosCincoMinutos() || horaEnPunto(13)) {
-    prenderRele(ventilacion);
+  if (temp>estado->temperaturaVentilacion || hum>estado->humedad || primerosCincoMinutos() || horaEnPunto(13)) {
+    //prenderRele(ventilacion);
+    digitalWrite(ventilacion,LOW);
+    
   } else {
-    apagarRele(ventilacion);
+    //apagarRele(ventilacion);
+    digitalWrite(ventilacion,HIGH);
   }
 
 }
@@ -91,8 +98,11 @@ if(tm.Hour>=06 && tm.Hour<24){
     print2digits(tm.Hour);
     Serial.print(" menor a ");
     Serial.println( horaParaComparar(estado->horaApagado, (estado->horaApagado-tm.Hour)>=0));
-    prenderRele(leds);
-    prenderRele(lamparas);
+    //prenderRele(leds);
+    //prenderRele(lamparas);
+
+    digitalWrite(leds,LOW);
+    digitalWrite(lamparas,LOW);
   } else {
     Serial.println("Luces Apagadas, son las ");
     print2digits(tm.Hour);
@@ -104,8 +114,10 @@ if(tm.Hour>=06 && tm.Hour<24){
     print2digits(tm.Hour);
     Serial.print(" menor a ");
     Serial.println( horaParaComparar(estado->horaApagado, (estado->horaApagado-tm.Hour)>=0));
-    apagarRele(leds);
-    apagarRele(lamparas);
+//    apagarRele(leds);
+//    apagarRele(lamparas);
+    digitalWrite(lamparas,HIGH);
+    digitalWrite(leds,HIGH);
   }
 }
 
