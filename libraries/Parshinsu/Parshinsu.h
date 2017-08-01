@@ -35,7 +35,7 @@ struct Calefaccion
 };
 
 struct Calefaccion* nuevaCalefaccion(int media, int minima, int maxima){
-	Calefaccion* calefaccion = malloc(sizeof(struct Calefaccion));
+	Calefaccion* calefaccion = (Calefaccion*)malloc(sizeof(struct Calefaccion));
 
 	calefaccion->media = media;
 	calefaccion->minima = minima;
@@ -77,13 +77,16 @@ Calefaccion* temperaturaVegetacion = nuevaCalefaccion(23, 20, 25);
  *    int horaPrendido;
  *    int horaApagado;
  */
-EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 06, 02);
+
+EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 8, 2);
 
 
 
 void prenderRele(int puerto){ digitalWrite(puerto, HIGH);}
 void apagarRele(int puerto) { digitalWrite(puerto, HIGH);}
 
+
+boolean iluminacionPrendida;
 
 boolean primerosCincoMinutos(){
   return tm.Minute>=00 || tm.Minute<=05;
@@ -109,8 +112,17 @@ byte bcdToDec(byte val)  {
   return ( (val/16*10) + (val%16) );
 }
 
+int horaActual(){
+	Wire.beginTransmission(DS1307_ADDRESS);
+  	Wire.write(zero);
+  	Wire.endTransmission();
+  	Wire.requestFrom(DS1307_ADDRESS, 7);
+	return bcdToDec(Wire.read() & 0b111111); //24 hour time	
+}
 
-void printDate(){
+
+int secondRT, minuteRT, hourRT, weekDayRT, monthDayRT, monthRT, yearRT;
+void leerHora(){
 
   // Reset the register pointer
   Wire.beginTransmission(DS1307_ADDRESS);
@@ -119,37 +131,40 @@ void printDate(){
 
   Wire.requestFrom(DS1307_ADDRESS, 7);
 
-  int second = bcdToDec(Wire.read());
-  int minute = bcdToDec(Wire.read());
-  int hour = bcdToDec(Wire.read() & 0b111111); //24 hour time
-  int weekDay = bcdToDec(Wire.read()); //0-6 -> sunday - Saturday
-  int monthDay = bcdToDec(Wire.read());
-  int month = bcdToDec(Wire.read());
-  int year = bcdToDec(Wire.read());
+  secondRT = bcdToDec(Wire.read());
+  minuteRT = bcdToDec(Wire.read());
+  hourRT = bcdToDec(Wire.read() & 0b111111); //24 hour time
+  weekDayRT = bcdToDec(Wire.read()); //0-6 -> sunday - Saturday
+  monthDayRT = bcdToDec(Wire.read());
+  monthRT = bcdToDec(Wire.read());
+  yearRT = bcdToDec(Wire.read());
 
+}
+void printDate(){
+  leerHora();
   //print the date EG   3/1/11 23:59:59
-  Serial.print(month);
+  Serial.print(monthRT);
   Serial.print("/");
-  Serial.print(monthDay);
+  Serial.print(monthDayRT);
   Serial.print("/");
-  Serial.print(year);
+  Serial.print(yearRT);
   Serial.print(" ");
-  Serial.print(hour);
+  Serial.print(hourRT);
   Serial.print(":");
-  Serial.print(minute);
+  Serial.print(minuteRT);
   Serial.print(":");
-  Serial.println(second);
+  Serial.println(secondRT);
 
 }
 
 void setDateTime(){
 
   byte second =      00; //0-59
-  byte minute =      59; //0-59
-  byte hour =        19; //0-23
-  byte weekDay =     7; //1-7
-  byte monthDay =    29; //1-31
-  byte month =       07; //1-12
+  byte minute =      43; //0-59
+  byte hour =        16; //0-23
+  byte weekDay =     3; //1-7
+  byte monthDay =    01; //1-31
+  byte month =       8; //1-12
   byte year  =       17; //0-99
 
   Wire.beginTransmission(DS1307_ADDRESS);

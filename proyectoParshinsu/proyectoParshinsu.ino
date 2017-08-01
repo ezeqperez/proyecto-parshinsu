@@ -31,13 +31,14 @@ void setup()
   digitalWrite(leds, HIGH);
   digitalWrite(lamparas, HIGH);
   digitalWrite(dacalor, HIGH);
-
+  //setTime(17,15,0,1, 8,2017);
   //Solo voy a setear el tiempo cuando sea necesario
   //setDateTime();
 }
 
 void loop() {
   float temp, hum;
+  leerHora();
 
   //mostrarFecha();
   //Si es 0, leyo ok
@@ -85,51 +86,44 @@ void controlVentilacion(int temp, int hum) {
 }
 
 void controlLuces() {
-//Revisar  if (estado->horaPrendido<=(horaParaComparar(tm.Hour,(false))) && (tm.Hour <= horaParaComparar(estado->horaApagado, (estado->horaApagado-tm.Hour)>=0)) ) {
-if(tm.Hour>=06 && tm.Hour<24){
-    Serial.print("Se prenden las luces, son las ");
-    mostrarFecha();
-    Serial.println(tm.Hour);
-
-        Serial.println(estado->horaPrendido);
-    Serial.print(" Tiene que ser menor a ");
-    Serial.print(horaParaComparar(tm.Hour,(false)));
-    Serial.println();
-    print2digits(tm.Hour);
-    Serial.print(" menor a ");
-    Serial.println( horaParaComparar(estado->horaApagado, (estado->horaApagado-tm.Hour)>=0));
-    //prenderRele(leds);
-    //prenderRele(lamparas);
-
-    digitalWrite(leds,LOW);
-    digitalWrite(lamparas,LOW);
-  } else {
-    Serial.println("Luces Apagadas, son las ");
-    print2digits(tm.Hour);
-    
-        Serial.println(horaParaComparar(tm.Hour,(estado->horaPrendido-tm.Hour)>=0));
-    Serial.print(" Tiene que ser mayor a ");
-    Serial.println(estado->horaPrendido);
-    Serial.println();
-    print2digits(tm.Hour);
-    Serial.print(" menor a ");
-    Serial.println( horaParaComparar(estado->horaApagado, (estado->horaApagado-tm.Hour)>=0));
-//    apagarRele(leds);
-//    apagarRele(lamparas);
-    digitalWrite(lamparas,HIGH);
-    digitalWrite(leds,HIGH);
-  }
+  if(dentroDeLaDuracion(estado->horaPrendido, estado->horaApagado)){
+      mostrarFecha();
+      Serial.print("Se prenden las luces, son las ");
+      mostarHorario();
+      digitalWrite(leds,LOW);
+      digitalWrite(lamparas,LOW);
+    } else {
+      mostrarFecha();
+      Serial.print("Luces Apagadas, son las ");
+      mostarHorario();
+      digitalWrite(lamparas,HIGH);
+      digitalWrite(leds,HIGH);
+    }
 }
 
-int horaParaComparar(int hora, bool seHace){
-  int aComparar = hora+12;
-  if(aComparar>=24 && seHace){
-    return hora;
-  }else{
-  return (hora+24);
-  }
+void mostarHorario(){
+      Serial.print(hourRT);
+      Serial.print(", Horario de prendido: ");
+      Serial.print(estado->horaPrendido);
+      Serial.print(" Horario de apagado: ");
+      Serial.print(estado->horaApagado);
+      Serial.println();
 }
 
 
+boolean dentroDeLaDuracion(int prendido, int apagado){
+  //Analizar el caso de las 23 y las 0
+  Serial.println(prendido);
+  Serial.println(apagado);
 
+  //Si la iluminacion esta prendida, llegado al horario de apagado lo apago
+  if(iluminacionPrendida && apagado<=hourRT){
+    iluminacionPrendida = false;
+  }
+  //Si la hora es mayor a la de encendido, se prende
+  if(prendido<=hourRT){
+    iluminacionPrendida = true;
+  }
+  return iluminacionPrendida;
+}
 
