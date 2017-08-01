@@ -91,6 +91,13 @@ void controlLuces() {
   }
 }
 
+boolean horaParaComparar(){
+  if(isAM()){
+    return tm.Hour +24;
+  }
+  return tm.Hour;
+}
+
 
 
 

@@ -47,7 +47,7 @@ struct Calefaccion* nuevaCalefaccion(int media, int minima, int maxima){
 
 struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperaturaCalefaccion, Calefaccion* calefaccion, int humedad, int horaPrendido, int horaApagado)
 {
-    EstadoPlanta* estado = malloc(sizeof(struct EstadoPlanta));
+    EstadoPlanta* estado = (EstadoPlanta*)malloc(sizeof(struct EstadoPlanta));
 
     estado->temperaturaVentilacion = temperaturaVentilacion;
     estado->temperaturaCalefaccion = temperaturaCalefaccion;
