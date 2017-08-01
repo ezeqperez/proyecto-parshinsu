@@ -78,14 +78,14 @@ void controlVentilacion(int temp, int hum) {
 }
 
 void controlLuces() {
-  if (estado->horaPrendido >= 06 && estado->horaApagado < 24) {
+  if (tm.Hour >= estado->horaPrendido && tm.Hour < estado->horaApagado ) {
     Serial.print("Se prenden las luces, son las ");
-    Serial.println(estado->horaPrendido);
+    Serial.println(tm.Hour);
     prenderRele(leds);
     prenderRele(lamparas);
   } else {
     Serial.print("Luces Apagadas, son las ");
-    Serial.println(estado->horaPrendido);
+    Serial.println(tm.Hour);
     apagarRele(leds);
     apagarRele(lamparas);
   }
