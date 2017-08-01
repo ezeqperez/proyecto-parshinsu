@@ -10,6 +10,7 @@ int luces = 6;
 int led = 13;
 int sensorth = 11;
 DHT11 dht11(sensorth);
+EstadoPlanta* estado = vegetacion;
 
 void setup()
 {
@@ -56,7 +57,7 @@ void loop(){
 
 //Se prende si la temperatura es menor a 20
 void controlCalefaccion(int temp){
-  if(temp < 20){
+  if(estado->temperaturaCalefaccion < 20){
     digitalWrite(dacalor, LOW);
   }else{
     digitalWrite(dacalor, HIGH);
@@ -65,7 +66,7 @@ void controlCalefaccion(int temp){
 
 //Se prende si la temperatura es mayor a 26 o si la humedad es mayor a 65
 void controlVentilacion(int temp, int hum){
-  if (temp > 26 || hum > 80){
+  if (estado->temperaturaVentilacion > 26 || estado->humedad > 80){
     digitalWrite(ventilacion, LOW);
   }else{
     digitalWrite(ventilacion, HIGH);
@@ -74,9 +75,7 @@ void controlVentilacion(int temp, int hum){
 }
 
 void controlLuces(){
-   if(tm.Hour>=06 && tm.Hour<24){
-     Serial.print("Luces Prendidas, son las "); 
-     Serial.println(tm.Hour);
+   if(estado->horaPrendido>=06 && estado->horaApagado<24){
      digitalWrite(luces, LOW);
    }else{
     Serial.print("Luces Apagadas, son las ");

@@ -6,10 +6,48 @@ byte zero = 0x00;
 #include <DHT11.h>
 #include <TimeLib.h>
 #include <DS1307RTC.h>
+#include <stdlib.h>
 
 tmElements_t tm;
 
+typedef struct EstadoPlanta EstadoPlanta;
 
+struct EstadoPlanta
+{
+    int temperatura;
+    int humedad;
+    int horaPrendido;
+    int horaApagado;
+    int temperaturaVentilacion;
+    int temperaturaCalefaccion;
+};
+
+struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperaturaCalefaccion, int humedad, int horaPrendido, int horaApagado)
+{
+    // Aquí requerimos la función "malloc" para reservar la memoria para el nuevo objeto
+    struct EstadoPlanta* estado = malloc(sizeof(struct EstadoPlanta));
+
+    estado->temperaturaVentilacion = temperaturaVentilacion;
+    estado->temperaturaCalefaccion = temperaturaCalefaccion;
+    estado->humedad = humedad;
+    estado->horaPrendido = horaPrendido;
+    estado->horaApagado = horaApagado;
+
+    return estado;
+}
+
+EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, 80, 06, 24);
+//Reemplazar por los valores correctos
+EstadoPlanta* floracion  = nuevoEstadoPlanta(26, 20, 80, 06, 24);
+
+
+
+	/*
+	*
+	*	Abajo está el código que sacamos de internet
+	*	Tocar a concienca
+	*
+	*/
 byte decToBcd(byte val){
 // Convert normal decimal numbers to binary coded decimal
   return ( (val/10*16) + (val%10) );
