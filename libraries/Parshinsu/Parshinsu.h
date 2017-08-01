@@ -20,15 +20,40 @@ struct EstadoPlanta
     int horaApagado;
     int temperaturaVentilacion;
     int temperaturaCalefaccion;
+
+    struct Calefaccion* calefaccion;
+
 };
 
-struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperaturaCalefaccion, int humedad, int horaPrendido, int horaApagado)
+typedef struct Calefaccion Calefaccion;
+
+struct Calefaccion
 {
-    // Aquí requerimos la función "malloc" para reservar la memoria para el nuevo objeto
-    struct EstadoPlanta* estado = malloc(sizeof(struct EstadoPlanta));
+	int media;
+	int minima;	
+	int maxima;
+};
+
+struct Calefaccion* nuevaCalefaccion(int media, int minima, int maxima){
+	Calefaccion* calefaccion = malloc(sizeof(struct Calefaccion));
+
+	calefaccion->media = media;
+	calefaccion->minima = minima;
+	calefaccion->maxima = maxima;
+
+	return calefaccion;
+};
+
+Calefaccion* temperaturaVegetacion = nuevaCalefaccion(20, 23, 25);
+//Armar una para la floracion
+
+struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperaturaCalefaccion, Calefaccion* calefaccion, int humedad, int horaPrendido, int horaApagado)
+{
+    EstadoPlanta* estado = malloc(sizeof(struct EstadoPlanta));
 
     estado->temperaturaVentilacion = temperaturaVentilacion;
     estado->temperaturaCalefaccion = temperaturaCalefaccion;
+    estado->calefaccion = calefaccion;
     estado->humedad = humedad;
     estado->horaPrendido = horaPrendido;
     estado->horaApagado = horaApagado;
@@ -36,9 +61,11 @@ struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperatu
     return estado;
 }
 
-EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, 80, 06, 24);
-//Reemplazar por los valores correctos
-EstadoPlanta* floracion  = nuevoEstadoPlanta(26, 20, 80, 06, 24);
+EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 06, 24);
+//Armar uno para floracion
+
+
+
 
 
 void prenderRele(int puerto){ digitalWrite(puerto, HIGH);}
