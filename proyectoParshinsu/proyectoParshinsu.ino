@@ -6,8 +6,8 @@
 
 int ventilacion = 4;
 int dacalor = 5;
-int luces = 6;
-int led = 13;
+int leds = 6;
+int lamparas = 7;
 int sensorth = 11;
 DHT11 dht11(sensorth);
 
@@ -17,9 +17,9 @@ void setup()
 {
   Serial.begin(9600);
   Wire.begin();
-  pinMode(led, OUTPUT);
   pinMode(ventilacion, OUTPUT);
-  pinMode(luces, OUTPUT);
+  pinMode(leds, OUTPUT);
+  pinMode(lamparas, OUTPUT);
   pinMode(dacalor, OUTPUT);
 
   //Low lo prende
@@ -27,7 +27,8 @@ void setup()
 
   //Inicializamos las cosas en apagado
   digitalWrite(ventilacion, HIGH);
-  digitalWrite(luces, HIGH);
+  digitalWrite(leds, HIGH);
+  digitalWrite(lamparas, HIGH);
   digitalWrite(dacalor, HIGH);
 
   //Solo voy a setear el tiempo cuando sea necesario
@@ -77,11 +78,15 @@ void controlVentilacion(int temp, int hum) {
 
 void controlLuces() {
   if (estado->horaPrendido >= 06 && estado->horaApagado < 24) {
-    prenderRele(luces);
+    Serial.print("Se prenden las luces, son las ");
+    Serial.println(estado->horaPrendido);
+    prenderRele(leds);
+    prenderRele(lamparas);
   } else {
     Serial.print("Luces Apagadas, son las ");
-    Serial.println(tm.Hour);
-    apagarRele(luces);
+    Serial.println(estado->horaPrendido);
+    apagarRele(leds);
+    apagarRele(lamparas);
   }
 }
 
