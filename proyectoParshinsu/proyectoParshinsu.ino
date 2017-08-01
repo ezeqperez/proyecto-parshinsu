@@ -11,6 +11,7 @@ int lamparas = 7;
 int sensorth = 11;
 DHT11 dht11(sensorth);
 
+
 EstadoPlanta* estado = vegetacion;
 
 void setup()

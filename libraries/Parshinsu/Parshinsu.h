@@ -44,8 +44,6 @@ struct Calefaccion* nuevaCalefaccion(int media, int minima, int maxima){
 	return calefaccion;
 };
 
-Calefaccion* temperaturaVegetacion = nuevaCalefaccion(20, 23, 25);
-//Armar una para la floracion
 
 struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperaturaCalefaccion, Calefaccion* calefaccion, int humedad, int horaPrendido, int horaApagado)
 {
@@ -61,10 +59,25 @@ struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperatu
     return estado;
 }
 
-EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 06, 24);
-//Armar uno para floracion
 
 
+/*  Maneja los controles de calefaccion (no implementado):
+ *    int temperaturaDeseada;
+ *    int temperaturaMaxima;
+ *    int temperaturaMinima
+ */
+ 
+Calefaccion* temperaturaVegetacion = nuevaCalefaccion(23, 20, 25);
+
+/*  Maneja los estados de la planta:
+ *    int temperaturaVentilacion;
+ *    int temperaturaCalefaccion;
+ *    Calefaccion* calefaccion (NO IMPLEMENTADO);
+ *    int humedad;
+ *    int horaPrendido;
+ *    int horaApagado;
+ */
+EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 06, 02);
 
 
 
