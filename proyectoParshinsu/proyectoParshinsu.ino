@@ -8,7 +8,7 @@ int sVentilacion = 4;
 int sCalor = 5;
 int sLeds = 6;
 int sLamparas = 7;
-int sdiasRiego = 7;
+int sdiasRiego = 9;
 int sensorth = 11;
 DHT11 dht11(sensorth);
 
@@ -25,6 +25,7 @@ void setup()
   pinMode(sLeds, OUTPUT);
   pinMode(sLamparas, OUTPUT);
   pinMode(sCalor, OUTPUT);
+  pinMode(sdiasRiego, OUTPUT);
 
   //Low lo prende
   //High lo apaga
@@ -34,7 +35,9 @@ void setup()
   digitalWrite(sLeds, HIGH);
   digitalWrite(sLamparas, HIGH);
   digitalWrite(sCalor, HIGH);
-  //setTime(17,15,0,1, 8,2017);
+  digitalWrite(sdiasRiego, HIGH);
+  //setTime(hr,min,sec,day,month,yr);
+  //setTime(23,37,0,2,8,2017);
   //Solo voy a setear el tiempo cuando sea necesario
   //setDateTime();
 }
@@ -62,7 +65,7 @@ void loop() {
   controldiasRiego();
   Serial.println();
   Serial.println();
-  delay(60000);
+  delay(30000);
 }
 
 //Se prende si la temperatura es menor a 20
@@ -87,8 +90,8 @@ void controlsVentilacion(int temp, int hum) {
 
 void controlLuces() {
   mostrarHorario();
- // if(dentroDeLaDuracion(estado->horaPrendido, estado->horaApagado)){
- if(estado->horaPrendido<=hourRT && hourRT<estado->horaApagado){
+  if(estado->horaPrendido<=hourRT && hourRT<estado->horaApagado){
+ // Para dejarlas prendidas if(true){
       Serial.print("Las luces estan prendidas. Quedan ");
       Serial.print(estado->horaApagado - hourRT);
       Serial.print(":");
@@ -104,15 +107,36 @@ void controlLuces() {
 }
 
 void controldiasRiego(){
-  if(diaSemana==3 && hourRT == 12 &&!riegoHecho){
+  if(diaSemana==7 && hourRT == 12 &&!riegoHecho){
+    Serial.println("Comienza el riego...");
     digitalWrite(sdiasRiego, LOW);
-    delay(7000);
+    imprimirPuntos();
     digitalWrite(sdiasRiego, HIGH);
+    Serial.println("Riego finalizado!");
     riegoHecho = true;
   }
-  if(hourRT == 13){
+  if(hourRT == 02){
     riegoHecho = false;
   }
+}
+
+void imprimirPuntos(){
+    delay(5000);
+    Serial.print(".");
+    delay(5000);
+    Serial.print(".");
+    delay(5000);
+    Serial.print(".");
+    delay(5000);
+    Serial.print(".");
+    delay(5000);
+    Serial.print(".");
+    delay(5000);
+    Serial.print(".");
+    delay(5000);
+    Serial.print(".");
+    delay(5000);
+    Serial.println(".");
 }
 
 void mostrarHorario(){
