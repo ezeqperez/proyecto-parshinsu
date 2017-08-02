@@ -4,12 +4,15 @@
 #include <DS1307RTC.h>
 #include <Parshinsu.h>
 
-int ventilacion = 4;
-int dacalor = 5;
-int leds = 6;
-int lamparas = 7;
+int sVentilacion = 4;
+int sCalor = 5;
+int sLeds = 6;
+int sLamparas = 7;
+int sdiasRiego = 7;
 int sensorth = 11;
 DHT11 dht11(sensorth);
+
+boolean riegoHecho = false;
 
 
 EstadoPlanta* estado = vegetacion;
@@ -18,19 +21,19 @@ void setup()
 {
   Serial.begin(9600);
   Wire.begin();
-  pinMode(ventilacion, OUTPUT);
-  pinMode(leds, OUTPUT);
-  pinMode(lamparas, OUTPUT);
-  pinMode(dacalor, OUTPUT);
+  pinMode(sVentilacion, OUTPUT);
+  pinMode(sLeds, OUTPUT);
+  pinMode(sLamparas, OUTPUT);
+  pinMode(sCalor, OUTPUT);
 
   //Low lo prende
   //High lo apaga
 
   //Inicializamos las cosas en apagado
-  digitalWrite(ventilacion, HIGH);
-  digitalWrite(leds, HIGH);
-  digitalWrite(lamparas, HIGH);
-  digitalWrite(dacalor, HIGH);
+  digitalWrite(sVentilacion, HIGH);
+  digitalWrite(sLeds, HIGH);
+  digitalWrite(sLamparas, HIGH);
+  digitalWrite(sCalor, HIGH);
   //setTime(17,15,0,1, 8,2017);
   //Solo voy a setear el tiempo cuando sea necesario
   //setDateTime();
@@ -54,67 +57,81 @@ void loop() {
   }
 
   controlCalefaccion(temp);
-  controlVentilacion(temp, hum);
+  controlsVentilacion(temp, hum);
   controlLuces();
-  delay(300000);
+  controldiasRiego();
+  Serial.println();
+  Serial.println();
+  delay(60000);
 }
 
 //Se prende si la temperatura es menor a 20
 void controlCalefaccion(int temp) {
   if (temp<estado->temperaturaCalefaccion) {
-    Serial.println(estado->temperaturaCalefaccion);
-    //prenderRele(dacalor);
-    digitalWrite(dacalor,LOW);
+    digitalWrite(sCalor,LOW);
   } else {
-    //apagarRele(dacalor);
-    Serial.println(estado->temperaturaCalefaccion);
-    digitalWrite(dacalor,HIGH);
+    digitalWrite(sCalor,HIGH);
   }
 }
 
 //Se prende si la temperatura es mayor a 26 o si la humedad es mayor a 65
-void controlVentilacion(int temp, int hum) {
+void controlsVentilacion(int temp, int hum) {
   if (temp>estado->temperaturaVentilacion || hum>estado->humedad || primerosCincoMinutos() || horaEnPunto(13)) {
-    //prenderRele(ventilacion);
-    digitalWrite(ventilacion,LOW);
+    digitalWrite(sVentilacion,LOW);
     
   } else {
-    //apagarRele(ventilacion);
-    digitalWrite(ventilacion,HIGH);
+    digitalWrite(sVentilacion,HIGH);
   }
 
 }
 
 void controlLuces() {
-  if(dentroDeLaDuracion(estado->horaPrendido, estado->horaApagado)){
-      mostrarFecha();
-      Serial.print("Se prenden las luces, son las ");
-      mostarHorario();
-      digitalWrite(leds,LOW);
-      digitalWrite(lamparas,LOW);
+  mostrarHorario();
+ // if(dentroDeLaDuracion(estado->horaPrendido, estado->horaApagado)){
+ if(estado->horaPrendido<=hourRT && hourRT<estado->horaApagado){
+      Serial.print("Las luces estan prendidas. Quedan ");
+      Serial.print(estado->horaApagado - hourRT);
+      Serial.print(":");
+      Serial.print(minuteRT);
+      Serial.println(" horas de luz");
+      digitalWrite(sLeds,LOW);
+      digitalWrite(sLamparas,LOW);
     } else {
-      mostrarFecha();
-      Serial.print("Luces Apagadas, son las ");
-      mostarHorario();
-      digitalWrite(lamparas,HIGH);
-      digitalWrite(leds,HIGH);
+      Serial.print("Las luces están apagadas");
+      digitalWrite(sLamparas,HIGH);
+      digitalWrite(sLeds,HIGH);
     }
 }
 
-void mostarHorario(){
+void controldiasRiego(){
+  if(diaSemana==3 && hourRT == 12 &&!riegoHecho){
+    digitalWrite(sdiasRiego, LOW);
+    delay(7000);
+    digitalWrite(sdiasRiego, HIGH);
+    riegoHecho = true;
+  }
+  if(hourRT == 13){
+    riegoHecho = false;
+  }
+}
+
+void mostrarHorario(){
+      Serial.print("Son las ");
       Serial.print(hourRT);
-      Serial.print(", Horario de prendido: ");
+      Serial.print("hs, Horario de prendido: ");
       Serial.print(estado->horaPrendido);
-      Serial.print(" Horario de apagado: ");
+      Serial.print("hs Horario de apagado: ");
       Serial.print(estado->horaApagado);
-      Serial.println();
+      Serial.println("hs");
 }
 
 
 boolean dentroDeLaDuracion(int prendido, int apagado){
   //Analizar el caso de las 23 y las 0
-  Serial.println(prendido);
-  Serial.println(apagado);
+ // Serial.println(prendido);
+ // Serial.println(apagado);
+
+  
 
   //Si la iluminacion esta prendida, llegado al horario de apagado lo apago
   if(iluminacionPrendida && apagado<=hourRT){

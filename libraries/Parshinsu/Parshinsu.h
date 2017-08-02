@@ -20,8 +20,8 @@ struct EstadoPlanta
     int horaApagado;
     int temperaturaVentilacion;
     int temperaturaCalefaccion;
-
     struct Calefaccion* calefaccion;
+    int diasRiego;
 
 };
 
@@ -45,7 +45,8 @@ struct Calefaccion* nuevaCalefaccion(int media, int minima, int maxima){
 };
 
 
-struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperaturaCalefaccion, Calefaccion* calefaccion, int humedad, int horaPrendido, int horaApagado)
+struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperaturaCalefaccion, Calefaccion* calefaccion, 
+	int humedad, int horaPrendido, int horaApagado, int )
 {
     EstadoPlanta* estado = (EstadoPlanta*)malloc(sizeof(struct EstadoPlanta));
 
@@ -78,7 +79,7 @@ Calefaccion* temperaturaVegetacion = nuevaCalefaccion(23, 20, 25);
  *    int horaApagado;
  */
 
-EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 8, 2);
+EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 5, 23, 5);
 
 
 
@@ -121,7 +122,7 @@ int horaActual(){
 }
 
 
-int secondRT, minuteRT, hourRT, weekDayRT, monthDayRT, monthRT, yearRT;
+int secondRT, minuteRT, hourRT, diaSemana, monthDayRT, monthRT, yearRT;
 void leerHora(){
 
   // Reset the register pointer
@@ -134,7 +135,7 @@ void leerHora(){
   secondRT = bcdToDec(Wire.read());
   minuteRT = bcdToDec(Wire.read());
   hourRT = bcdToDec(Wire.read() & 0b111111); //24 hour time
-  weekDayRT = bcdToDec(Wire.read()); //0-6 -> sunday - Saturday
+  diaSemana = bcdToDec(Wire.read()); //0-6 -> sunday - Saturday
   monthDayRT = bcdToDec(Wire.read());
   monthRT = bcdToDec(Wire.read());
   yearRT = bcdToDec(Wire.read());
