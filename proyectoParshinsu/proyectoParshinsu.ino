@@ -69,7 +69,7 @@ void loop() {
   }
 
   controlCalefaccion(temp);
-  controlsVentilacion(temp, hum);
+  controlVentilacion(temp, hum);
   controlLuces();
   controldiasRiego();
   Serial.println();
@@ -86,13 +86,49 @@ void controlCalefaccion(int temp) {
   }
 }
 
+boolean prendePorTemperaturaVentilacion(int temp){
+  if(temp>estado->temperaturaVentilacion){
+    Serial.println("Temperatura mayor a 26 grados");
+  }
+}
+
+boolean prendePorHumedad(int hum){
+  if( hum>estado->humedad){
+    Serial.println("Humedad mayor a 65");
+  }
+}
+
+boolean prendePorCincoMin(){
+  if(primerosCincoMinutos()){
+    Serial.println("Son los primeros 5 minutos de la hora");
+  }
+}
+
+
+boolean prendePorEnPunto(){
+  if(horaEnPunto(13)){
+    Serial.println("Son las 13 en punto");
+  }
+}
+
+
 //Se prende si la temperatura es mayor a 26 o si la humedad es mayor a 65
-void controlsVentilacion(int temp, int hum) {
-  if (temp>estado->temperaturaVentilacion || hum>estado->humedad || primerosCincoMinutos() || horaEnPunto(13)) {
+void controlVentilacion(int temp, int hum) {
+  if (temp>estado->temperaturaVentilacion || hum>estado->humedad ||// primerosCincoMinutos() || 
+  horaEnPunto(13)) {
+
+    //Para ver quien lo prende
+    prendePorTemperaturaVentilacion(temp);
+    prendePorHumedad(hum);
+  //  prendePorCincoMin();
+    prendePorEnPunto();
+    
     digitalWrite(sVentilacion,LOW);
+    Serial.println("Ventilacion Prendida");
     
   } else {
     digitalWrite(sVentilacion,HIGH);
+    Serial.println("Ventilacion Apagada");
   }
 
 }
@@ -102,14 +138,14 @@ void controlLuces() {
   if(estado->horaPrendido<=hourRT && hourRT<estado->horaApagado){
  // Para dejarlas prendidas if(true){
       Serial.print("Las luces estan prendidas. Quedan ");
-      Serial.print(estado->horaApagado - hourRT);
+      Serial.print(estado->horaApagado - hourRT -1);
       Serial.print(":");
-      Serial.print(minuteRT);
+      Serial.print(60 - minuteRT);
       Serial.println(" horas de luz");
       digitalWrite(sLeds,LOW);
       digitalWrite(sLamparas,LOW);
     } else {
-      Serial.print("Las luces están apagadas");
+      Serial.print("Las luces están apagadas.");
       digitalWrite(sLamparas,HIGH);
       digitalWrite(sLeds,HIGH);
     }
