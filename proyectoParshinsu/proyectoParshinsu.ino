@@ -14,8 +14,15 @@ DHT11 dht11(sensorth);
 
 boolean riegoHecho = false;
 
-
-EstadoPlanta* estado = vegetacion;
+/*  Maneja los estados de la planta:
+ *    int temperaturaVentilacion;
+ *    int temperaturaCalefaccion;
+ *    Calefaccion* calefaccion (NO IMPLEMENTADO);
+ *    int humedad;
+ *    int horaPrendido;
+ *    int horaApagado;
+ */
+EstadoPlanta* estado = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 5, 23);
 
 void setup()
 {
@@ -36,8 +43,11 @@ void setup()
   digitalWrite(sLamparas, HIGH);
   digitalWrite(sCalor, HIGH);
   digitalWrite(sdiasRiego, HIGH);
+  //Estos creo que no van, borrar cuando este seguro
   //setTime(hr,min,sec,day,month,yr);
   //setTime(23,37,0,2,8,2017);
+  
+  
   //Solo voy a setear el tiempo cuando sea necesario
   //setDateTime();
 }
@@ -45,8 +55,7 @@ void setup()
 void loop() {
   float temp, hum;
   leerHora();
-
-  //mostrarFecha();
+  mostrarFecha();
   //Si es 0, leyo ok
   if (dht11.read(hum, temp) == 0) {
     Serial.print("Temperatura: ");
@@ -107,7 +116,11 @@ void controlLuces() {
 }
 
 void controldiasRiego(){
-  if(diaSemana==7 && hourRT == 12 &&!riegoHecho){
+  /*
+   * que sea el dia de la semana que yo quiero (diaSemana=1 es lunes, diaSemana=7 es domingo)
+   * que sea la hora que quiera (y en el IF de abajo agregar una hora mas)
+   */
+  if(diaSemana==5 && hourRT == 12 &&!riegoHecho){
     Serial.println("Comienza el riego...");
     digitalWrite(sdiasRiego, LOW);
     imprimirPuntos();
