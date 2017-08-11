@@ -3,6 +3,11 @@
 #include <TimeLib.h>
 #include <DS1307RTC.h>
 #include <Parshinsu.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x3F,16,2);
+//LiquidCrystal_I2C lcd(0x20,16,2);
+//LiquidCrystal_I2C lcd(0x27,16,2);
 
 int sVentilacion = 4;
 int sCalor = 5;
@@ -28,6 +33,10 @@ void setup()
 {
   Serial.begin(9600);
   Wire.begin();
+  lcd.begin(16, 2);
+  lcd.clear();
+  lcd.backlight();
+
   pinMode(sVentilacion, OUTPUT);
   pinMode(sLeds, OUTPUT);
   pinMode(sLamparas, OUTPUT);
@@ -72,17 +81,40 @@ void loop() {
   controlVentilacion(temp, hum);
   controlLuces();
   controldiasRiego();
+  escribirDisplay(hum, temp);
   Serial.println();
   Serial.println();
   delay(30000);
 }
 
+void escribirDisplay(int hum, int temp){
+  lcd.setCursor(0, 0);
+  lcd.print("Indobar ");
+  lcd.setCursor(8,0);
+  lcd.print(hourRT);
+  lcd.setCursor(10,0);
+  lcd.print(":");
+  lcd.setCursor(11,0);
+  lcd.print(minuteRT);
+  lcd.setCursor(0, 1);
+  lcd.print("H:");
+  lcd.setCursor(2, 1);
+  lcd.print(hum);
+  lcd.setCursor(5, 1);
+  lcd.print("T:");
+  lcd.print(temp);
+  }
+
 //Se prende si la temperatura es menor a 20
 void controlCalefaccion(int temp) {
   if (temp<estado->temperaturaCalefaccion) {
     digitalWrite(sCalor,LOW);
+    lcd.setCursor(9,1);
+    lcd.print("V:On");
   } else {
     digitalWrite(sCalor,HIGH);
+    lcd.setCursor(9, 1);
+    lcd.print("V:Off");
   }
 }
 
@@ -216,4 +248,3 @@ boolean dentroDeLaDuracion(int prendido, int apagado){
   }
   return iluminacionPrendida;
 }
-
