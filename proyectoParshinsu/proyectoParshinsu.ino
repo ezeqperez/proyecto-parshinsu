@@ -87,15 +87,34 @@ void loop() {
   delay(30000);
 }
 
+void fechaConCeros(int hora, int minuto){
+  if(hora<10){
+    lcd.print("0");
+    lcd.setCursor(9,0);
+    lcd.print(hora);
+    lcd.setCursor(10,0);
+  }else{
+    lcd.print(hora);
+    lcd.setCursor(10,0);  
+  }
+  lcd.print(":");
+  lcd.setCursor(11,0);
+  if(minuto<10){
+    lcd.print("0");
+    lcd.setCursor(12,0);
+    lcd.print(minuto);
+  }else{
+    lcd.print(minuto);  
+  }
+}
+
+
 void escribirDisplay(int hum, int temp){
   lcd.setCursor(0, 0);
   lcd.print("Indobar ");
   lcd.setCursor(8,0);
-  lcd.print(hourRT);
-  lcd.setCursor(10,0);
-  lcd.print(":");
-  lcd.setCursor(11,0);
-  lcd.print(minuteRT);
+  fechaConCeros(hourRT, minuteRT);
+
   lcd.setCursor(0, 1);
   lcd.print("H:");
   lcd.setCursor(2, 1);
