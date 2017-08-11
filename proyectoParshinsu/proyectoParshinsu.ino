@@ -208,7 +208,7 @@ void controldiasRiego(){
    * que sea el dia de la semana que yo quiero (diaSemana=1 es lunes, diaSemana=7 es domingo)
    * que sea la hora que quiera (y en el IF de abajo agregar una hora mas)
    */
-  if(diaSemana==5 && hourRT == 12 &&!riegoHecho){
+  if(diaSemana==5 && hourRT == 22 &&!riegoHecho){
     Serial.println("Comienza el riego...");
     digitalWrite(sdiasRiego, LOW);
     imprimirPuntos();
@@ -216,7 +216,7 @@ void controldiasRiego(){
     Serial.println("Riego finalizado!");
     riegoHecho = true;
   }
-  if(hourRT == 02){
+  if(hourRT == 23){
     riegoHecho = false;
   }
 }
