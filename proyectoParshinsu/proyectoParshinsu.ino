@@ -79,9 +79,9 @@ void loop() {
 
   controlCalefaccion(temp);
   controlVentilacion(temp, hum);
-  controlLuces();
   controldiasRiego();
   escribirDisplay(hum, temp);
+  controlLuces();
   Serial.println();
   Serial.println();
   delay(30000);
@@ -128,13 +128,12 @@ void escribirDisplay(int hum, int temp){
 void controlCalefaccion(int temp) {
   if (temp<estado->temperaturaCalefaccion) {
     digitalWrite(sCalor,LOW);
-    lcd.setCursor(9,1);
-    lcd.print("V:On");
+    lcd.setCursor(10,1);
+    lcd.print("V");
   } else {
     digitalWrite(sCalor,HIGH);
-    lcd.setCursor(9, 1);
-    lcd.print("V:Off");
   }
+  lcd.setCursor(12,1);
 }
 
 boolean prendePorTemperaturaVentilacion(int temp){
@@ -188,6 +187,8 @@ void controlLuces() {
   mostrarHorario();
   if(estado->horaPrendido<=hourRT && hourRT<estado->horaApagado){
  // Para dejarlas prendidas if(true){
+      lcd.setCursor(12,1);
+      lcd.print("L");
       Serial.print("Las luces estan prendidas. Quedan ");
       Serial.print(estado->horaApagado - hourRT -1);
       Serial.print(":");
