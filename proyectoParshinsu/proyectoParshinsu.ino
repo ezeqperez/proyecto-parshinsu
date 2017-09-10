@@ -18,6 +18,9 @@ int sensorth = 11;
 DHT11 dht11(sensorth);
 
 boolean riegoHecho = false;
+int horaVieja; 
+float temp, hum;
+
 
 /*  Maneja los estados de la planta:
  *    int temperaturaVentilacion;
@@ -52,17 +55,19 @@ void setup()
   digitalWrite(sLamparas, HIGH);
   digitalWrite(sCalor, HIGH);
   digitalWrite(sdiasRiego, HIGH);
-  //Estos creo que no van, borrar cuando este seguro
-  //setTime(hr,min,sec,day,month,yr);
-  //setTime(23,37,0,2,8,2017);
+  leerHora();
+  horaVieja = hourRT;
   
-  
-  //Solo voy a setear el tiempo cuando sea necesario
+  //(minuto, hora, diaDeLaSemana, año)
+  //Lunes = 1
+  //Domingo = 7
   //setDateTime();
+  //setearFecha(55, 17, 5,2017);
+
 }
+void (*pseudoReset)(void)=0;
 
 void loop() {
-  float temp, hum;
   leerHora();
   mostrarFecha();
   //Si es 0, leyo ok
@@ -79,12 +84,25 @@ void loop() {
 
   controlCalefaccion(temp);
   controlVentilacion(temp, hum);
-  controldiasRiego();
-  escribirDisplay(hum, temp);
   controlLuces();
+  escribirDisplay(hum, temp);
+  controldiasRiego();
   Serial.println();
   Serial.println();
   delay(30000);
+  
+  //Sacar esto si funciona mal el reset
+  resetear();
+
+}
+
+void resetear(){
+  if(horaVieja != hourRT){
+       Serial.println("Se resetea"); 
+
+    pseudoReset();  
+  }
+  horaVieja = hourRT;
 }
 
 void fechaConCeros(int hora, int minuto){
@@ -128,13 +146,10 @@ void escribirDisplay(int hum, int temp){
 void controlCalefaccion(int temp) {
   if (temp<estado->temperaturaCalefaccion) {
     digitalWrite(sCalor,LOW);
-    lcd.setCursor(10,1);
-    lcd.print("V");
-  } else {
+    } else {
     digitalWrite(sCalor,HIGH);
+   }
   }
-  lcd.setCursor(12,1);
-}
 
 boolean prendePorTemperaturaVentilacion(int temp){
   if(temp>estado->temperaturaVentilacion){
@@ -145,6 +160,7 @@ boolean prendePorTemperaturaVentilacion(int temp){
 boolean prendePorHumedad(int hum){
   if( hum>estado->humedad){
     Serial.println("Humedad mayor a 65");
+    
   }
 }
 
@@ -175,10 +191,14 @@ void controlVentilacion(int temp, int hum) {
     
     digitalWrite(sVentilacion,LOW);
     Serial.println("Ventilacion Prendida");
+    lcd.setCursor(10,1);
+    lcd.print("V");
     
   } else {
     digitalWrite(sVentilacion,HIGH);
     Serial.println("Ventilacion Apagada");
+    lcd.setCursor(10,1);
+    lcd.print(" ");
   }
 
 }
@@ -187,8 +207,6 @@ void controlLuces() {
   mostrarHorario();
   if(estado->horaPrendido<=hourRT && hourRT<estado->horaApagado){
  // Para dejarlas prendidas if(true){
-      lcd.setCursor(12,1);
-      lcd.print("L");
       Serial.print("Las luces estan prendidas. Quedan ");
       Serial.print(estado->horaApagado - hourRT -1);
       Serial.print(":");
@@ -196,10 +214,14 @@ void controlLuces() {
       Serial.println(" horas de luz");
       digitalWrite(sLeds,LOW);
       digitalWrite(sLamparas,LOW);
+      lcd.setCursor(12,1);
+      lcd.print("L");
     } else {
       Serial.print("Las luces están apagadas.");
       digitalWrite(sLamparas,HIGH);
       digitalWrite(sLeds,HIGH);
+      lcd.setCursor(12,1);
+      lcd.print(" ");
     }
 }
 
@@ -208,7 +230,7 @@ void controldiasRiego(){
    * que sea el dia de la semana que yo quiero (diaSemana=1 es lunes, diaSemana=7 es domingo)
    * que sea la hora que quiera (y en el IF de abajo agregar una hora mas)
    */
-  if(diaSemana==5 && hourRT == 22 &&!riegoHecho){
+  if(diaSemana==5 && hourRT == 20 &&!riegoHecho){
     Serial.println("Comienza el riego...");
     digitalWrite(sdiasRiego, LOW);
     imprimirPuntos();
@@ -216,7 +238,7 @@ void controldiasRiego(){
     Serial.println("Riego finalizado!");
     riegoHecho = true;
   }
-  if(hourRT == 23){
+  if(hourRT == 19){
     riegoHecho = false;
   }
 }
@@ -255,9 +277,6 @@ boolean dentroDeLaDuracion(int prendido, int apagado){
   //Analizar el caso de las 23 y las 0
  // Serial.println(prendido);
  // Serial.println(apagado);
-
-  
-
   //Si la iluminacion esta prendida, llegado al horario de apagado lo apago
   if(iluminacionPrendida && apagado<=hourRT){
     iluminacionPrendida = false;
@@ -268,3 +287,32 @@ boolean dentroDeLaDuracion(int prendido, int apagado){
   }
   return iluminacionPrendida;
 }
+
+
+void setDateTime(){
+
+  byte second =      30; //0-59
+  byte minute =      40; //0-59
+  byte hour =        19; //0-23
+  byte weekDay =     6; // lunes = 1   - 7=domingo
+  byte monthDay =    9; //1-31
+  byte month =       9; //1-12
+  byte year  =       17; //0-99
+
+  Wire.beginTransmission(DS1307_ADDRESS);
+  Wire.write(zero); //stop Oscillator
+
+  Wire.write(decToBcd(second));
+  Wire.write(decToBcd(minute));
+  Wire.write(decToBcd(hour));
+  Wire.write(decToBcd(weekDay));
+  Wire.write(decToBcd(monthDay));
+  Wire.write(decToBcd(month));
+  Wire.write(decToBcd(year));
+
+  Wire.write(zero); //start 
+
+  Wire.endTransmission();
+
+}
+
