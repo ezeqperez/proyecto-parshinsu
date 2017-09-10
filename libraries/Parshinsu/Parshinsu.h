@@ -1,4 +1,4 @@
-#define Parshinsu
+﻿#define Parshinsu
 #define DS1307_ADDRESS 0x68
 byte zero = 0x00; 
 
@@ -7,6 +7,7 @@ byte zero = 0x00;
 #include <TimeLib.h>
 #include <DS1307RTC.h>
 #include <stdlib.h>
+#include <math.h>
 
 tmElements_t tm;
 
@@ -21,7 +22,7 @@ struct EstadoPlanta
     int temperaturaVentilacion;
     int temperaturaCalefaccion;
     struct Calefaccion* calefaccion;
-    int diasRiego;
+  //  int diasRiego;
 
 };
 
@@ -46,7 +47,7 @@ struct Calefaccion* nuevaCalefaccion(int media, int minima, int maxima){
 
 
 struct EstadoPlanta* nuevoEstadoPlanta(int temperaturaVentilacion, int temperaturaCalefaccion, Calefaccion* calefaccion, 
-	int humedad, int horaPrendido, int horaApagado, int )
+	int humedad, int horaPrendido, int horaApagado)
 {
     EstadoPlanta* estado = (EstadoPlanta*)malloc(sizeof(struct EstadoPlanta));
 
@@ -79,7 +80,7 @@ Calefaccion* temperaturaVegetacion = nuevaCalefaccion(23, 20, 25);
  *    int horaApagado;
  */
 
-EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 5, 23, 5);
+//EstadoPlanta* vegetacion = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 5, 23);
 
 
 
@@ -90,6 +91,7 @@ void apagarRele(int puerto) { digitalWrite(puerto, HIGH);}
 boolean iluminacionPrendida;
 
 boolean primerosCincoMinutos(){
+  Serial.println(tm.Minute);
   return tm.Minute>=00 || tm.Minute<=05;
 }
 
@@ -158,15 +160,33 @@ void printDate(){
 
 }
 
-void setDateTime(){
+
+void setearFecha(byte minute, byte hour, byte weekDay, byte year){
 
   byte second =      00; //0-59
-  byte minute =      43; //0-59
-  byte hour =        16; //0-23
-  byte weekDay =     3; //1-7
-  byte monthDay =    01; //1-31
+  byte monthDay =    10; //1-31
   byte month =       8; //1-12
-  byte year  =       17; //0-99
+
+
+  Wire.beginTransmission(DS1307_ADDRESS);
+  Wire.write(zero); //stop Oscillator
+
+  Wire.write(decToBcd(second));
+  Wire.write(decToBcd(minute));
+  Wire.write(decToBcd(hour));
+  Wire.write(decToBcd(weekDay));
+  Wire.write(decToBcd(monthDay));
+  Wire.write(decToBcd(month));
+  Wire.write(decToBcd(year));
+
+  Wire.write(zero); //start 
+
+  Wire.endTransmission();
+
+}
+
+
+void setearFecha(byte second, byte minute, byte hour, byte weekDay, byte monthDay, byte month, byte year){
 
   Wire.beginTransmission(DS1307_ADDRESS);
   Wire.write(zero); //stop Oscillator
