@@ -161,12 +161,12 @@ void printDate(){
 }
 
 
-void setearFecha(byte minute, byte hour, byte weekDay, byte year){
+void setearFecha(byte minute, byte hour, byte weekDay){
 
-  byte second =      00; //0-59
+  byte second =      50; //0-59
   byte monthDay =    10; //1-31
   byte month =       8; //1-12
-
+  byte year =        17;
 
   Wire.beginTransmission(DS1307_ADDRESS);
   Wire.write(zero); //stop Oscillator

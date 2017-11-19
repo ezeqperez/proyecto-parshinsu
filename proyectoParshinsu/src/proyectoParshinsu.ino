@@ -58,11 +58,11 @@ void setup()
   leerHora();
   horaVieja = hourRT;
   
-  //(minuto, hora, diaDeLaSemana, año)
+  //(minuto, hora, diaDeLaSemana)
   //Lunes = 1
   //Domingo = 7
   //setDateTime();
-  //setearFecha(55, 17, 5,2017);
+  //setearFecha(54, 20, 6);
 
 }
 void (*pseudoReset)(void)=0;
@@ -230,7 +230,7 @@ void controldiasRiego(){
    * que sea el dia de la semana que yo quiero (diaSemana=1 es lunes, diaSemana=7 es domingo)
    * que sea la hora que quiera (y en el IF de abajo agregar una hora mas)
    */
-  if(diaSemana==5 && hourRT == 20 &&!riegoHecho){
+  if(esUnDiaDeRiego() && hourRT == 20 &&!riegoHecho){
     Serial.println("Comienza el riego...");
     digitalWrite(sdiasRiego, LOW);
     imprimirPuntos();
@@ -243,7 +243,12 @@ void controldiasRiego(){
   }
 }
 
+boolean esUnDiaDeRiego(){
+  return (diaSemana == 1 || diaSemana == 4 || diaSemana == 6);
+}
+
 void imprimirPuntos(){
+    //Tarda 40 segundos
     delay(5000);
     Serial.print(".");
     delay(5000);
@@ -259,6 +264,7 @@ void imprimirPuntos(){
     delay(5000);
     Serial.print(".");
     delay(5000);
+    Serial.print(".");
     Serial.println(".");
 }
 
@@ -272,7 +278,7 @@ void mostrarHorario(){
       Serial.println("hs");
 }
 
-
+/*
 boolean dentroDeLaDuracion(int prendido, int apagado){
   //Analizar el caso de las 23 y las 0
  // Serial.println(prendido);
@@ -288,15 +294,15 @@ boolean dentroDeLaDuracion(int prendido, int apagado){
   return iluminacionPrendida;
 }
 
-
+*/
 void setDateTime(){
 
   byte second =      30; //0-59
-  byte minute =      40; //0-59
-  byte hour =        19; //0-23
-  byte weekDay =     6; // lunes = 1   - 7=domingo
-  byte monthDay =    9; //1-31
-  byte month =       9; //1-12
+  byte minute =      01; //0-59
+  byte hour =        12; //0-23
+  byte weekDay =     7; // lunes = 1   - 7=domingo
+  byte monthDay =    01; //1-31
+  byte month =       10; //1-12
   byte year  =       17; //0-99
 
   Wire.beginTransmission(DS1307_ADDRESS);
