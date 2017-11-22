@@ -161,7 +161,7 @@ void printDate(){
 }
 
 
-void setearFecha(byte minute, byte hour, byte weekDay){
+void setearFecha(byte hour, byte minute, byte weekDay){
 
   byte second =      50; //0-59
   byte monthDay =    10; //1-31

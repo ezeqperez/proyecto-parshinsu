@@ -4,6 +4,7 @@
 #include <DS1307RTC.h>
 #include <Parshinsu.h>
 #include <LiquidCrystal_I2C.h>
+#include <avr/wdt.h>
 
 LiquidCrystal_I2C lcd(0x3F,16,2);
 //LiquidCrystal_I2C lcd(0x20,16,2);
@@ -17,10 +18,13 @@ int sdiasRiego = 9;
 int sensorth = 11;
 DHT11 dht11(sensorth);
 
+
+
 boolean riegoHecho = false;
+boolean enfriando = false;
 int horaVieja; 
 float temp, hum;
-
+int temperaturaVentilacion = 27;
 
 /*  Maneja los estados de la planta:
  *    int temperaturaVentilacion;
@@ -35,6 +39,9 @@ EstadoPlanta* estado = nuevoEstadoPlanta(26, 20, temperaturaVegetacion, 80, 5, 2
 void setup()
 {
   Serial.begin(9600);
+  //Arranca el watchdog apagado
+  wdt_disable();
+  
   Wire.begin();
   lcd.begin(16, 2);
   lcd.clear();
@@ -58,12 +65,13 @@ void setup()
   leerHora();
   horaVieja = hourRT;
   
-  //(minuto, hora, diaDeLaSemana)
+  //(hora, minuto, diaDeLaSemana)
   //Lunes = 1
   //Domingo = 7
   //setDateTime();
-  //setearFecha(54, 20, 6);
+  //setearFecha(20, 27, 2);
 
+  wdt_enable(WDTO_8S);
 }
 void (*pseudoReset)(void)=0;
 
@@ -83,16 +91,19 @@ void loop() {
   }
 
   controlCalefaccion(temp);
-  controlVentilacion(temp, hum);
+  //controlVentilacion(temp, hum);
+  controlVentilacionPorTemperatura(temp);
   controlLuces();
   escribirDisplay(hum, temp);
   controldiasRiego();
   Serial.println();
   Serial.println();
-  delay(30000);
-  
+  delay(5000);
+
+  //Watchdog
+  wdt_reset();
   //Sacar esto si funciona mal el reset
-  resetear();
+  //resetear();
 
 }
 
@@ -127,21 +138,6 @@ void fechaConCeros(int hora, int minuto){
 }
 
 
-void escribirDisplay(int hum, int temp){
-  lcd.setCursor(0, 0);
-  lcd.print("Indobar ");
-  lcd.setCursor(8,0);
-  fechaConCeros(hourRT, minuteRT);
-
-  lcd.setCursor(0, 1);
-  lcd.print("H:");
-  lcd.setCursor(2, 1);
-  lcd.print(hum);
-  lcd.setCursor(5, 1);
-  lcd.print("T:");
-  lcd.print(temp);
-  }
-
 //Se prende si la temperatura es menor a 20
 void controlCalefaccion(int temp) {
   if (temp<estado->temperaturaCalefaccion) {
@@ -151,34 +147,41 @@ void controlCalefaccion(int temp) {
    }
   }
 
-boolean prendePorTemperaturaVentilacion(int temp){
-  if(temp>estado->temperaturaVentilacion){
-    Serial.println("Temperatura mayor a 26 grados");
-  }
-}
 
-boolean prendePorHumedad(int hum){
-  if( hum>estado->humedad){
-    Serial.println("Humedad mayor a 65");
-    
-  }
-}
-
-boolean prendePorCincoMin(){
-  if(primerosCincoMinutos()){
-    Serial.println("Son los primeros 5 minutos de la hora");
-  }
-}
-
-
-boolean prendePorEnPunto(){
-  if(horaEnPunto(13)){
-    Serial.println("Son las 13 en punto");
-  }
-}
-
-
+/*
+ * 
+ * Control temperatura
+ *  
+ */
 //Se prende si la temperatura es mayor a 26 o si la humedad es mayor a 65
+
+void controlVentilacionPorTemperatura(int temp){
+  if(haceCalor(temp)){
+    digitalWrite(sVentilacion,LOW);
+    Serial.println("Ventilacion Prendida");
+    lcd.setCursor(10,1);
+    lcd.print("V");
+    Serial.println("Temperatura mayor a 26 grados, empieza la ventilación");
+  }
+  if(seEnfrio(temp)){
+    digitalWrite(sVentilacion,HIGH);
+    Serial.println("Ventilacion Apagada");
+    lcd.setCursor(10,1);
+    lcd.print(" ");
+    Serial.println("Fin de ventilación");  
+  }
+}
+
+boolean haceCalor(int temp){
+  return temp>estado->temperaturaVentilacion;
+}
+boolean seEnfrio(int temp){
+  return temp<26;
+}
+
+/*
+ * Sin uso
+ */
 void controlVentilacion(int temp, int hum) {
   if (temp>estado->temperaturaVentilacion || hum>estado->humedad ||// primerosCincoMinutos() || 
   horaEnPunto(13)) {
@@ -203,6 +206,41 @@ void controlVentilacion(int temp, int hum) {
 
 }
 
+
+boolean prendePorTemperaturaVentilacion(int temp){
+  if(temp>estado->temperaturaVentilacion){
+    Serial.println("Temperatura mayor a 26 grados, empieza la ventilación");
+  }
+}
+
+boolean prendePorHumedad(int hum){
+  if( hum>estado->humedad){
+    Serial.println("Humedad mayor a 65");
+    
+  }
+}
+
+boolean prendePorCincoMin(){
+  if(primerosCincoMinutos()){
+    Serial.println("Son los primeros 5 minutos de la hora");
+  }
+}
+
+
+boolean prendePorEnPunto(){
+  if(horaEnPunto(13)){
+    Serial.println("Son las 13 en punto");
+  }
+}
+
+
+
+/*
+ * 
+ * Control Luces
+ * 
+ */
+
 void controlLuces() {
   mostrarHorario();
   if(estado->horaPrendido<=hourRT && hourRT<estado->horaApagado){
@@ -225,6 +263,13 @@ void controlLuces() {
     }
 }
 
+
+/*
+ * 
+ * Control Riego
+ * 
+ */
+
 void controldiasRiego(){
   /*
    * que sea el dia de la semana que yo quiero (diaSemana=1 es lunes, diaSemana=7 es domingo)
@@ -233,7 +278,8 @@ void controldiasRiego(){
   if(esUnDiaDeRiego() && hourRT == 20 &&!riegoHecho){
     Serial.println("Comienza el riego...");
     digitalWrite(sdiasRiego, LOW);
-    imprimirPuntos();
+    //Pasarle la cantidad de segundos que quiera mantener el riego
+    tiempoConWatchdog(40);
     digitalWrite(sdiasRiego, HIGH);
     Serial.println("Riego finalizado!");
     riegoHecho = true;
@@ -247,6 +293,7 @@ boolean esUnDiaDeRiego(){
   return (diaSemana == 1 || diaSemana == 4 || diaSemana == 6);
 }
 
+//Se usaba en "controlDiasRiego()", reemplazar por "tiempoConWatchdog"
 void imprimirPuntos(){
     //Tarda 40 segundos
     delay(5000);
@@ -268,15 +315,28 @@ void imprimirPuntos(){
     Serial.println(".");
 }
 
-void mostrarHorario(){
-      Serial.print("Son las ");
-      Serial.print(hourRT);
-      Serial.print("hs, Horario de prendido: ");
-      Serial.print(estado->horaPrendido);
-      Serial.print("hs Horario de apagado: ");
-      Serial.print(estado->horaApagado);
-      Serial.println("hs");
+
+/*
+ * 
+ * Watchdog
+ * 
+ */
+void tiempoConWatchdog(int tiempo){
+  for(int i = 0; i<tiempo; i++){
+    delay(1000);
+    Serial.print(".");
+    wdt_reset();
+  }
 }
+
+
+/*
+ * 
+ * Varios (Mover a la libreria)
+ * 
+ */
+
+
 
 /*
 boolean dentroDeLaDuracion(int prendido, int apagado){
@@ -295,6 +355,34 @@ boolean dentroDeLaDuracion(int prendido, int apagado){
 }
 
 */
+
+void mostrarHorario(){
+      Serial.print("Son las ");
+      Serial.print(hourRT);
+      Serial.print("hs, Horario de prendido: ");
+      Serial.print(estado->horaPrendido);
+      Serial.print("hs Horario de apagado: ");
+      Serial.print(estado->horaApagado);
+      Serial.println("hs");
+}
+
+
+void escribirDisplay(int hum, int temp){
+  lcd.setCursor(0, 0);
+  lcd.print("Indobar ");
+  lcd.setCursor(8,0);
+  fechaConCeros(hourRT, minuteRT);
+
+  lcd.setCursor(0, 1);
+  lcd.print("H:");
+  lcd.setCursor(2, 1);
+  lcd.print(hum);
+  lcd.setCursor(5, 1);
+  lcd.print("T:");
+  lcd.print(temp);
+  }
+
+
 void setDateTime(){
 
   byte second =      30; //0-59
